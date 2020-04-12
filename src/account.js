@@ -7,7 +7,7 @@ export default function Account() {
   }
 
   const [balanceSheet, setBalanceSheet] = useState([]);
-  const [total, setTotal] = useState(0);
+  const [total, setTotal] = useState({"total":0,"amount":0,"scharge":0});
 
   const sum = (accumulator, currentValue) => accumulator + currentValue;
 
@@ -35,10 +35,10 @@ export default function Account() {
     }
 
     if(scharge < 0) {
-        setTotal(amount+scharge);
+        setTotal({"total" :amount+scharge,"amount" : amount, "scharge" : scharge});
     }
     else {
-        setTotal(amount-scharge);
+        setTotal({"total" :amount-scharge,"amount" : amount, "scharge" : scharge});
     }
 
   }, [balanceSheet]);
@@ -52,6 +52,17 @@ export default function Account() {
   const removeItem = (i) => {
     const newList = [...balanceSheet];
     newList.splice(i, 1);
+    setBalanceSheet(newList);
+  }
+
+  const changeItem = (i,property,value) => {
+    const newList = [...balanceSheet];
+    if(property !== "name") {
+      newList[i][property] = parseFloat(value);
+    }
+    else {
+      newList[i][property] = value;
+    }
     setBalanceSheet(newList);
   }
 
@@ -96,9 +107,9 @@ export default function Account() {
   return (
     <div>
       <div>
-        <span style={padding10}>Name: <input id="input_name" /></span>
-        <span style={padding10}>Amount: <input id="input_amount" /></span>
-        <span style={padding10}>Service Charge: <input id="input_scharge" /></span>
+        <span style={padding10}>Name: <input id="input_name" placeholder="Enter Name"/></span>
+        <span style={padding10}>Amount: <input id="input_amount"  placeholder="Enter Amount"/></span>
+        <span style={padding10}>Service Charge: <input id="input_scharge"  placeholder="Enter Service Charge"/></span>
         <span style={padding10}><button onClick={() => {
           let newinput = {
             name: document.getElementById("input_name").value,
@@ -106,26 +117,28 @@ export default function Account() {
             scharge: parseFloat(document.getElementById("input_scharge").value || 0),
           }
           addItem(newinput);
-        }}>Add</button></span>
+          document.getElementById("input_name").focus();
+        }}>Add Transaction</button></span>
       </div>
 
       <div>
         <h3 style={{
           padding: "10px",
           margin: "30px 0 10px",
-        }}>Balance Sheet: (Total Balance = {total})</h3>
+        }}>Balance Sheet: Total Balance = {total.total.toFixed(2)} | Total Transaction Amount = {total.amount.toFixed(2)} | Total Service Charge = {total.scharge.toFixed(2)}</h3>
 
         {
           balanceSheet.map((item, index) => {
             return (
               <div style={padding10}>
-                <span style={padding10}>Name: <input id={"output_name" + index} value={item.name} /></span>
-                <span style={padding10}>Amount: <input type="number" id={"output_amount" + index} value={item.amount} /></span>
-                <span style={padding10}>Service Charge: <input type="number" id={"output_scharge" + index} value={item.scharge} /></span>
+                <span style={padding10}>Name: <input id={"output_name" + index} value={balanceSheet[index].name}
+                 onChange={(e) => {changeItem(index, "name", e.target.value);}}/></span>
+                <span style={padding10}>Amount: <input type="number" id={"output_amount" + index} value={balanceSheet[index].amount} onChange={(e) => {changeItem(index, "amount", e.target.value);}}/></span>
+                <span style={padding10}>Service Charge: <input type="number" id={"output_scharge" + index} value={balanceSheet[index].scharge} onChange={(e) => {changeItem(index, "scharge", e.target.value);}}/></span>
                 <span style={padding10}>Balance: <span> {balance(index)} </span></span>
                 <button onClick={() => {
                   removeItem(index);
-                }}>Delete</button>
+                }}>Remove Transaction</button>
               </div>
             )
           })
